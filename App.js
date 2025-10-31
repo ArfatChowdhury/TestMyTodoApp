@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, FlatList, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function App() {
 
@@ -12,29 +13,66 @@ export default function App() {
 
   // console.log(searchQuery, addQuery);
   console.log('data in array', data);
-  
 
-  const handleAdd = () => {
+  useEffect(() => {
+    const getTodos = async () => {
+      try {
+        const todos = await AsyncStorage.getItem('my-todo')
+        console.log('Loaded from storage:', todos);
 
-    if(addQuery.trim() === ''){
-      Alert.alert('write task to add')
-      return
+        if (todos !== null) {
+          setData(JSON.parse(todos))
+        }
+        else {
+          setData(data)
+          await AsyncStorage.setItem('my-todo', JSON.stringify(data))
+        }
+      }catch(err){
+        console.log(err);
+      }
     }
-  
-    const newTask ={
-      id: Date.now(),
-      task: addQuery
+
+    getTodos()
+
+  }, [])
+
+
+  const handleAdd = async () => {
+
+    try {
+      if (addQuery.trim() === '') {
+        Alert.alert('write task to add')
+        return
+      }
+
+      const newTask = {
+        id: Date.now(),
+        task: addQuery
+      }
+
+      const updatedData = [...data, newTask]
+      setData(updatedData)
+      setAddQuery('')
+
+      await AsyncStorage.setItem('my-todo', JSON.stringify(updatedData))
+      Keyboard.dismiss()
+    } catch (err) {
+      console.log(err);
+
     }
 
-    setData([...data, newTask])
-    setAddQuery('')
   }
 
-  const handleDelete = (id) =>{
+  const handleDelete = async (id) => {
 
-    const updatedData = data.filter(item => item.id !== id)
+    try {
+      const updatedData = data.filter(item => item.id !== id)
+      setData(updatedData)
+      await AsyncStorage.setItem('my-todo', JSON.stringify(updatedData))
+    } catch (err) {
+      console.log(err);
 
-    setData(updatedData)
+    }
 
   }
 
@@ -60,16 +98,16 @@ export default function App() {
       <View style={styles.mainContainer}>
 
         <FlatList
-        data={data}
-        keyExtractor={item => item.id}
-        renderItem={({item})=>(
-          <View style={styles.listContainer}>
-            <Text style={styles.listTitle}>{item.task}</Text>
-            <TouchableOpacity onPress={()=>handleDelete(item.id)}>
-              <Ionicons name='trash' size={24} color='red'/>
-            </TouchableOpacity>
-          </View>
-        )}
+          data={data}
+          keyExtractor={item => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.listContainer}>
+              <Text style={styles.listTitle}>{item.task}</Text>
+              <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                <Ionicons name='trash' size={24} color='red' />
+              </TouchableOpacity>
+            </View>
+          )}
         />
 
 
@@ -143,16 +181,16 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1
   },
-  listContainer:{
-    flexDirection:'row',
-    justifyContent:'space-between',
-    backgroundColor:'white',
-    padding:10,
-    marginVertical:10,
-    borderRadius:10
+  listContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: 'white',
+    padding: 10,
+    marginVertical: 10,
+    borderRadius: 10
   },
-  listTitle:{
-    fontSize:20,
-    fontWeight:'bold'
+  listTitle: {
+    fontSize: 20,
+    fontWeight: 'bold'
   }
 });

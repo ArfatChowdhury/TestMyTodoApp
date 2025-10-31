@@ -23,10 +23,7 @@ export default function App() {
         if (todos !== null) {
           setData(JSON.parse(todos))
         }
-        else {
-          setData(data)
-          await AsyncStorage.setItem('my-todo', JSON.stringify(data))
-        }
+        
       }catch(err){
         console.log(err);
       }

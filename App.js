@@ -74,6 +74,9 @@ export default function App() {
   }
 
 
+  const filteredData = data.filter(todo => todo.task.toLowerCase().includes(searchQuery.toLowerCase()))
+
+
   return (
     <View style={styles.container}>
 
@@ -88,6 +91,7 @@ export default function App() {
           style={styles.searchInput}
           value={searchQuery}
           onChangeText={setSearchQuery}
+          testID='search-input'
         />
       </View>
       {/* flatlist */}
@@ -95,12 +99,13 @@ export default function App() {
       <View style={styles.mainContainer}>
 
         <FlatList
-          data={data}
+          data={searchQuery ? filteredData : data}
           keyExtractor={item => item.id}
+          testID='flatlist'
           renderItem={({ item }) => (
             <View style={styles.listContainer}>
               <Text style={styles.listTitle}>{item.task}</Text>
-              <TouchableOpacity onPress={() => handleDelete(item.id)}>
+              <TouchableOpacity testID='delete-button' onPress={() => handleDelete(item.id)}>
                 <Ionicons name='trash' size={24} color='red' />
               </TouchableOpacity>
             </View>
@@ -121,9 +126,11 @@ export default function App() {
           style={styles.addInput}
           value={addQuery}
           onChangeText={setAddQuery}
+          testID='add-input'
         />
         <TouchableOpacity onPress={handleAdd}>
           <Ionicons name='add-circle' size={60} color={'black'} />
+          <Text testID='add-button'>Add</Text>
         </TouchableOpacity>
       </View>
       <StatusBar style="auto" />

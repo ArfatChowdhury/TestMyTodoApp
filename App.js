@@ -105,7 +105,7 @@ export default function App() {
           renderItem={({ item }) => (
             <View style={styles.listContainer}>
               <Text style={styles.listTitle}>{item.task}</Text>
-              <TouchableOpacity testID='delete-button' onPress={() => handleDelete(item.id)}>
+              <TouchableOpacity testID={`delete-button-${item.id}`} onPress={() => handleDelete(item.id)}>
                 <Ionicons name='trash' size={24} color='red' />
               </TouchableOpacity>
             </View>
@@ -128,9 +128,9 @@ export default function App() {
           onChangeText={setAddQuery}
           testID='add-input'
         />
-        <TouchableOpacity onPress={handleAdd}>
+        <TouchableOpacity testID='add-button' onPress={handleAdd}>
           <Ionicons name='add-circle' size={60} color={'black'} />
-          <Text testID='add-button'>Add</Text>
+          
         </TouchableOpacity>
       </View>
       <StatusBar style="auto" />

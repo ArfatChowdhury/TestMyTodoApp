@@ -8,24 +8,34 @@ import { jest } from '@jest/globals';
 
 const mockAlert = jest.fn();
 
-jest.mock("react-native", () => {
-    const rn = jest.requireActual("react-native");
-    return Object.setPrototypeOf(
-      {
-        Alert: {
-            alert: mockAlert,
-        },
-      },
-      rn
-    );
-  });
+// jest.mock("react-native", () => {
+//     const rn = jest.requireActual("react-native");
+//     return Object.setPrototypeOf(
+//       {
+//         Alert: {
+//             alert: mockAlert,
+//         },
+//       },
+//       rn
+//     );
+//   });
 
 
 describe('Unit Tests', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-        AsyncStorage.clear();
-    });
+    let alertSpy;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    AsyncStorage.getItem.mockResolvedValue(null);
+    
+    // Create spy on Alert.alert
+    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    // Restore the original implementation after each test
+    alertSpy.mockRestore();
+  });
     test('handleAdd function validates empty input', () => {
         // Test the validation logic separately
         const { getByTestId, getByText, queryByText } = render(<App />)
@@ -60,9 +70,15 @@ describe('Unit Tests', () => {
 
     test('handleDelete removes correct task', () => {
         // Test delete logic with mock data
-        // const { getByTestId, getByText, getAllByTestId } = render(<App />)
-        // const deleteButtons = getAllByTestId(/delete-button-/);
-        // fireEvent.press(deleteButtons[0])
-        // expect(queryByText('buy milk')).toBeNull()
+        const { getByTestId, getByText, getAllByTestId, queryByText } = render(<App />)
+        const inputAdd = getByTestId('add-input')
+        const addButton = getByTestId('add-button')
+        fireEvent.changeText(inputAdd, 'buy milk')
+        fireEvent.press(addButton)
+        expect(getByText('buy milk')).toBeTruthy()
+        const deleteButtons = getAllByTestId(/delete-button-/);
+        const deleteButton = deleteButtons[0];
+        fireEvent.press(deleteButton)
+        expect(queryByText('buy milk')).toBeNull();
     });
 });
